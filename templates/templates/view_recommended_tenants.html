@@ -1,0 +1,6 @@
+{% block content %} 
+    	{% for s in tenants %}
+			<div>Name : {{ s[0] }} Email : {{ s[1] }} Gender : {{ s[2] }} Age : {{ s[3] }} Price : {{ s[4] }} Type : {{ s[5] }}</div>
+		
+    	{% endfor %}
+{%endblock %}

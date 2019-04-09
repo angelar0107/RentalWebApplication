@@ -1,0 +1,6 @@
+{% block content %} 
+    	{% for s in apt %}
+			<div>Size : {{ s[0] }} Type : {{ s[1] }} Price : {{ s[2] }} House Number : {{ s[3] }} Address : {{ s[4] }}</div>
+
+    	{% endfor %}
+{%endblock %}

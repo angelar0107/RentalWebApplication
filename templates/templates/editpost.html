@@ -1,0 +1,39 @@
+{% block content %}
+    <div class="container">
+            {% if self_login %}   
+             
+
+
+                <div class="profile-content">
+                    <div class="post">
+                        <h2>Current Requirement</h2>
+                        {% for s in post %}
+                        <div class="info-container">
+                                <div>Price : {{ s[0] }} Type : {{ s[1] }} Size : {{ s[2] }}</div>
+                               
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class = "edit-post">
+                    <form action="#" method="post" id="form1">
+                        <div>
+                            <h3>Add Requirement</h3>
+                            <label for="price">Price</label>
+                            <input type="text" name="price" id="price" placeholder="Price">
+                            <label for="size">Size</label>
+                            <input type="text" name="size" id="size" placeholder="Size">
+                            <label for="type">Type</label>
+                            <input type="text" name="type" id="type" placeholder="Type">
+                        </div>
+                                        
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+
+
+            {% endif %}
+    </div>
+
+
+{% endblock %}

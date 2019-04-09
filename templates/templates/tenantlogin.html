@@ -1,0 +1,21 @@
+
+
+{% block header %}
+  <h1>{% block title %}Log In{% endblock %}</h1>
+{% endblock %}
+ 
+{% block content %}
+    <form method="POST">
+      <div class="container">
+        <label for="tusername">Email address</label>
+        <input type="text" name="tusername" id="tusername" placeholder="Email address" required>
+        <label for="tpassword">Password</label>
+        <input type="password" name="tpassword" id="tpassword" placeholder="Password" required>
+         
+        <button type="submit">Login</button>
+      </div>
+    </form>
+    {% if error %}
+    <div>{{ error }}</div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+
+
+   <div class="header">
+     <h1>Welcome, tenant</h1>
+   </div>
+    
+   <div class="topnav">
+       <ul>
+          {% if session.get('id') %}    
+            <li><a href="{{ url_for('editworkin') }}">Edit Work_in Company</a></li>
+             <li><a href="{{ url_for('editlivein') }}">Edit Live_in apartment</a></li>
+            <li><a href="{{ url_for('editpost') }}">Edit Requirements</a></li>
+            <li><a href="{{ url_for('view_recommended_apartments')}}">View Recommened Apartments</a></li>
+
+          <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+          {% else %}
+            <li><a href="{{ url_for('tenant_signup') }}">Sign Up</a></li>
+            <li><a href="{{ url_for('tenant_login') }}">Log in</a></li>
+          {% endif %}
+       </ul>
+   </div>
+   
+    <h2>Welcome to 58 Housing, a magic website!</h2>
+   
+   <div class="footer">
+    © 2019 Anran Li, Yingling Wang. Rights statement.
+  </div>  

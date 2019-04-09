@@ -1,0 +1,45 @@
+
+
+{% block header %}
+  <h1>{% block title %}Tenant Sign Up{% endblock %}</h1>
+{% endblock %}
+
+      
+{% block content %}  
+
+
+
+    <form method="POST">
+      <div class="container">
+        <label for="tusername">Email address</label>
+        <input type="text" name="tusername" id="tusername" placeholder="Email address" required>
+        <label for="tpassword">Password</label>
+        <input type="password" name="tpassword" id="tpassword" placeholder="Password" required>
+        
+        <label for="tname">Name</label>
+        <input type="text" name="tname" id="tname" placeholder="Tenant name">
+        
+        <label for="tphone">Phone</label>
+        <input type="text" name="tphone" id="tphone" placeholder="phone">
+    
+        <div>
+            <label for="gender">Gender:  
+            <input type="radio" name="tgender" id="tmale" value="m" onclick="getValue(this.value)">
+            <label for="tmale">
+                Male
+            </label>
+            <input type="radio" name="tgender" id="tfemale" value="f" onclick="getValue(this.value)">
+            <label for="tfemale">
+                Female
+            </label>
+        </label>
+
+        </div>
+        <label for="tage">Age</label>
+        <input type="text" name="tage" id="tage" placeholder="age">
+
+         
+        <button type="submit">Signup</button>
+      </div>
+    </form>
+{% endblock %}

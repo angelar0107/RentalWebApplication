@@ -1,73 +1,24 @@
 #!/usr/bin/env python2.7
 
-"""
-Columbia's COMS W4111.001 Introduction to Databases
-Example Webserver
-
-To run locally:
-
-    python server.py
-
-Go to http://localhost:8111 in your browser.
-
-A debugger such as "pdb" may be helpful for debugging.
-Read about it online.
-"""
-
 import os
 from sqlalchemy import *
 from sqlalchemy.pool import NullPool
-from flask import Flask, request, render_template, g, redirect, Response
-#security
+from flask import Flask, request, render_template, g, Response, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash,generate_password_hash
+from config import *
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
-
-
-#
-# The following is a dummy URI that does not connect to a valid database. You will need to modify it to connect to your Part 2 database in order to use the data.
-#
-# XXX: The URI should be in the format of: 
-#
-#     postgresql://USER:PASSWORD@104.196.18.7/w4111
-#
-# For example, if you had username biliris and password foobar, then the following line would be:
-#
-#     DATABASEURI = "postgresql://biliris:foobar@104.196.18.7/w4111"
-#
+app.secret_key = 'key'
 
 USER = "yw3152"
-PASSWORD = "regamian"
+PASSWORD = "reganmian"
 
-DATABASEURI = "postgresql://"+ USER + ":" + PASSWORD + "104.196.18.7/w4111"
-
-
-#
-# This line creates a database engine that knows how to connect to the URI above.
-#
+DATABASEURI = "postgresql://"+ USER + ":" + PASSWORD +"@"+ "34.73.21.127/proj1part2"
 engine = create_engine(DATABASEURI)
-
-#
-# Example of running queries in your database
-# Note that this will probably not work if you already have a table named 'test' in your database, containing meaningful data. This is only an example showing you how to run queries in your database using SQLAlchemy.
-################################
-# engine.execute("""CREATE TABLE IF NOT EXISTS test (
-#   id serial,
-#   name text
-# );""")
-# engine.execute("""INSERT INTO test(name) VALUES ('grace hopper'), ('alan turing'), ('ada lovelace');""")
-
 
 @app.before_request
 def before_request():
-  """
-  This function is run at the beginning of every web request 
-  (every time you enter an address in the web browser).
-  We use it to setup a database connection that can be used throughout the request.
-
-  The variable g is globally accessible.
-  """
   try:
     g.conn = engine.connect()
   except:
@@ -77,114 +28,440 @@ def before_request():
 
 @app.teardown_request
 def teardown_request(exception):
-  """
-  At the end of the web request, this makes sure to close the database connection.
-  If you don't, the database could run out of memory!
-  """
   try:
     g.conn.close()
   except Exception as e:
     pass
 
-
-#
-# @app.route is a decorator around index() that means:
-#   run index() whenever the user tries to access the "/" path using a GET request
-#
-# If you wanted the user to go to, for example, localhost:8111/foobar/ with POST or GET then you could use:
-#
-#       @app.route("/foobar/", methods=["POST", "GET"])
-#
-# PROTIP: (the trailing / in the path is important)
-# 
-# see for routing: http://flask.pocoo.org/docs/0.10/quickstart/#routing
-# see for decorators: http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/
-#
 @app.route('/')
-def index():
-  """
-  request is a special object that Flask provides to access web request information:
+def home():
+    return render_template('home.html')
 
-  request.method:   "GET" or "POST"
-  request.form:     if the browser submitted a form, this contains the data in the form
-  request.args:     dictionary of URL arguments, e.g., {a:1, b:2} for http://localhost?a=1&b=2
+@app.route('/base')
+def base():
+    return render_template('base.html')
 
-  See its API: http://flask.pocoo.org/docs/0.10/api/#incoming-request-data
-  """
+@app.route('/tenant_base')
+def tenant_base():
+    return render_template('tenantbase.html')
 
-  # DEBUG: this is debugging code to see what request looks like
-  print request.args
-
-
-  #
-  # example of a database query
-  #
-  cursor = g.conn.execute("SELECT name FROM test")
-  names = []
-  for result in cursor:
-    names.append(result['name'])  # can also be accessed using result[0]
-  cursor.close()
-
-  #
-  # Flask uses Jinja templates, which is an extension to HTML where you can
-  # pass data to a template and dynamically generate HTML based on the data
-  # (you can think of it as simple PHP)
-  # documentation: https://realpython.com/blog/python/primer-on-jinja-templating/
-  #
-  # You can see an example template in templates/index.html
-  #
-  # context are the variables that are passed to the template.
-  # for example, "data" key in the context variable defined below will be 
-  # accessible as a variable in index.html:
-  #
-  #     # will print: [u'grace hopper', u'alan turing', u'ada lovelace']
-  #     <div>{{data}}</div>
-  #     
-  #     # creates a <div> tag for each element in data
-  #     # will print: 
-  #     #
-  #     #   <div>grace hopper</div>
-  #     #   <div>alan turing</div>
-  #     #   <div>ada lovelace</div>
-  #     #
-  #     {% for n in data %}
-  #     <div>{{n}}</div>
-  #     {% endfor %}
-  #
-  context = dict(data = names)
+@app.route('/landlord_base')
+def landlord_base():
+    return render_template('landlordbase.html')
 
 
-  #
-  # render_template looks in the templates/ folder for files.
-  # for example, the below file reads template/index.html
-  #
-  return render_template("index.html", **context)
+@app.route('/landlord_signup', methods=['GET','POST'])
+def landlord_signup():
+    error = None
+    if session.get('logged_in') == True:
+        return redirect(url_for('landlord_base'))
 
-#
-# This is an example of a different path.  You can see it at:
-# 
-#     localhost:8111/another
-#
-# Notice that the function name is another() rather than index()
-# The functions for each app.route need to have different names
-#
-@app.route('/another')
-def another():
-  return render_template("another.html")
+    if request.method == 'POST':
+        email = request.form['lusername']
+        password = request.form['lpassword']
+        name = request.form.get('lname')
+        phone = request.form.get('lphone')
+        gender = request.form['lgender']
+        age = request.form['lage']
+
+        if not email:
+            error = 'Email is required.'
+        elif not password:
+            error = 'Password is required.'
+        elif g.conn.execute(
+            '''SELECT landlord_id FROM landlords WHERE email = '{}';'''.format(email)
+        ).fetchone() is not None:
+            return render_template('landlordbase.html',
+                                   error='This email has already been registered.')
+
+        cursor = g.conn.execute(
+          "SELECT max(landlord_id) FROM landlords"
+        )
+        landlord_id = cursor.fetchone()[0] + 1
+
+        if error is None:
+            g.conn.execute(
+                '''INSERT INTO landlords (landlord_id, email, gender, name, phone, age, password ) VALUES ({0}, '{1}', '{2}','{3}','{4}',{5},'{6}')'''.format(
+                    landlord_id, email, gender, name, phone, age, generate_password_hash(password))
+                )
+            flash('User created successfully, please login')
+            return redirect(url_for('landlord_login'))
+
+    return render_template('landlordsignup.html')
+
+@app.route('/landlord_login', methods=['GET','POST'])
+def landlord_login():
+    error = None
+    session.permanent = False
+    if session.get('logged_in') == True:
+      return redirect(url_for('landlord_base'))
+
+    if request.method == 'POST':
+      email = request.form['lusername']
+      password = request.form['lpassword']
+
+      landlord = g.conn.execute(
+            '''SELECT * FROM landlords WHERE email = '{}';'''.format(email)
+        ).fetchone()
+
+      if landlord is None:
+          error = 'Invalid username'
+      elif not check_password_hash(landlord['password'], password):
+          error = 'Incorrect password.'
+
+      if error is None:
+        session['logged_in'] = True
+        session['id'] = landlord['landlord_id']
+        session['landlord'] = True
+        return redirect(url_for('landlord_base'))
+    return render_template('landlordlogin.html', error=error)
 
 
-# Example of adding new data to the database
-@app.route('/add', methods=['POST'])
-def add():
-  name = request.form['name']
-  g.conn.execute('INSERT INTO test VALUES (NULL, ?)', name)
-  return redirect('/')
+@app.route('/tenant_signup', methods=['GET','POST'])
+def tenant_signup():
+    error = None
+    if session.get('logged_in') == True:
+        return redirect(url_for('tenant_base'))
+
+    if request.method == 'POST':
+        email = request.form['tusername']
+        password = request.form['tpassword']
+        name = request.form.get('tname')
+        phone = request.form.get('tphone')
+        gender = request.form['tgender']
+        age = request.form['tage']
+
+        if not email:
+            error = 'Email is required.'
+        elif not password:
+            error = 'Password is required.'
+        elif g.conn.execute(
+            '''SELECT tenant_id FROM tenants WHERE email = '{}';'''.format(email)
+        ).fetchone() is not None:
+            return render_template('tenantbase.html',
+                                   error='This email has already been registered.')
+
+        cursor = g.conn.execute(
+          "SELECT max(tenant_id) FROM tenants"
+        )
+        tenant_id = cursor.fetchone()[0] + 1
+
+        if error is None:
+            g.conn.execute(
+                '''INSERT INTO tenants (tenant_id, email, gender, name, phone, age, password ) VALUES ({0}, '{1}', '{2}','{3}','{4}',{5},'{6}')'''.format(
+                    tenant_id, email, gender, name, phone, age, generate_password_hash(password))
+                )
+            flash('User created successfully, please login')
+            return redirect(url_for('tenant_login'))
+    return render_template('tenantsignup.html')
+
+@app.route('/tenant_login', methods=['GET','POST'])
+def tenant_login():
+    error = None
+    session.permanent = False
+    if session.get('logged_in') == True:
+      return redirect(url_for('tenant_base'))
+
+    if request.method == 'POST':
+      email = request.form['tusername']
+      password = request.form['tpassword']
+
+      tenant = g.conn.execute(
+            '''SELECT * FROM tenants WHERE email = '{}';'''.format(email)
+        ).fetchone()
+
+      if tenant is None:
+          error = 'Invalid username'
+      elif not check_password_hash(tenant['password'], password):
+          error = 'Incorrect password.'
+
+      if error is None:
+        session['logged_in'] = True
+        session['id'] = tenant['tenant_id']
+        session['tenant'] = True
+        return redirect(url_for('tenant_base'))
+    return render_template('tenantlogin.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session['tenant'] = False
+    session['landlord'] = False
+    session['id'] = None
+    session['logged_in'] = False
+    return redirect(url_for('home'))
+
+@app.route('/editoffer/landlord', methods=['GET','POST'])
+def editoffer():
+    error = None
+    if session.get('logged_in') == False:
+        return redirect(url_for('landlord_login'))
+    landlord_id = session.get('id')
+
+    live_in = []
+    cursor = g.conn.execute(
+        "SELECT price,type,size,house_number,building_id FROM apartment_belong where apartment_id in (select apartment_id from offer where landlord_id = {})".format(landlord_id)
+    ).fetchall()
+    all_avl = g.conn.execute(
+        "SELECT availability FROM offer where apartment_id in (select apartment_id from offer where landlord_id = {})".format(landlord_id)
+    ).fetchall()
+
+    for result in cursor:
+        live_in.append(result)
+    for i in range(len(live_in)):
+        live_in[i] = list(live_in[i])
+        live_in[i].append(all_avl[i][0])
+
+    if request.method == 'POST':
+        price = request.form['price']
+        size = request.form['size']
+        type = request.form.get('type')
+        hnumber = request.form.get('hnumber')
+        avaliability = request.form['avaliability']
+        building_id = request.form['building_id']
+
+        if not price:
+            error = 'Price is required.'
+        elif not type:
+            error = 'Type is required.'
+        elif not building_id:
+            error = 'You should choose one building your apartment belong.'
+        elif g.conn.execute(
+            '''SELECT building_id FROM buildings WHERE building_id = {};'''.format(building_id)
+        ).fetchone() is None:
+            return render_template('editoffer.html',
+                                   error='This building_id is invalid.')
+        flash(error)
+
+        cursor = g.conn.execute(
+          "SELECT max(apartment_id) FROM apartment_belong"
+        )
+        apartment_id = cursor.fetchone()[0] + 1
+
+        if error is None:
+            g.conn.execute(
+                '''INSERT INTO apartment_belong (apartment_id, price, size, type, house_number, building_id) VALUES ({0}, '{1}', '{2}','{3}','{4}','{5}')'''.format(
+                    apartment_id, price, size, type, hnumber, building_id)
+                )
+            g.conn.execute(
+                '''INSERT INTO offer (apartment_id, landlord_id, availability ) VALUES ({0}, {1}, '{2}')'''.format(
+                    apartment_id, landlord_id, avaliability)
+            )
+            flash('Landlord edits apartment offered successfully')
+            return redirect(url_for('landlord_base'))
+
+    return render_template('editoffer.html', self_login=session.get('logged_in'),live_in = live_in)
+
+@app.route('/editrequirement/tenant', methods=['GET','POST'])
+def editpost():
+    error = None
+    if session.get('logged_in') == False:
+        return redirect(url_for('tenant_login'))
+    tenant_id = session.get('id')
+
+    post = []
+    cursor = g.conn.execute(
+        "SELECT price,type,size FROM requirement where requirement_id in (select requirement_id from post where tenant_id = {})".format(tenant_id)
+    ).fetchall()
 
 
-@app.route('/login')
-def login():
-    abort(401)
-    this_is_never_executed()
+    for result in cursor:
+        post.append(result)
+
+    if request.method == 'POST':
+        price = request.form['price']
+        size = request.form['size']
+        type = request.form.get('type')
+
+        if not price:
+            error = 'Price is required.'
+        elif not type:
+            error = 'Type is required.'
+        flash(error)
+
+        cursor = g.conn.execute(
+          "SELECT max(requirement_id) FROM requirement"
+        )
+        requirement_id = cursor.fetchone()[0] + 1
+
+        if error is None:
+            g.conn.execute(
+                '''INSERT INTO requirement (requirement_id, price, size, type) VALUES ({0}, {1}, '{2}','{3}')'''.format(
+                    requirement_id, price, size, type)
+                )
+            g.conn.execute(
+                '''INSERT INTO post (requirement_id, tenant_id ) VALUES ({0}, {1})'''.format(
+                    requirement_id, tenant_id)
+            )
+            flash('Tenant edits apartment requirement successfully')
+            return redirect(url_for('tenant_base'))
+
+    return render_template('editpost.html', self_login=session.get('logged_in'),post = post)
+
+@app.route('/companylist', methods=['GET','POST'])
+def companylist():
+    company_list = []
+    cursor = g.conn.execute(
+        "SELECT company_id,name FROM company"
+    ).fetchall()
+    for result in cursor:
+        company_list.append(result)
+    return render_template('companylist.html',  company_list = company_list)
+
+
+@app.route('/buildinglist', methods=['GET','POST'])
+def buildinglist():
+    building_list = []
+    cursor = g.conn.execute(
+        "SELECT building_id,address FROM buildings"
+    ).fetchall()
+    for result in cursor:
+        building_list.append(result)
+    return render_template('buildinglist.html',  building_list = building_list)
+
+
+@app.route('/editworkin/tenant', methods=['GET','POST'])
+def editworkin():
+    error = None
+    if session.get('logged_in') == False:
+        return redirect(url_for('tenant_login'))
+    tenant_id = session.get('id')
+
+    work_in = []
+    cursor = g.conn.execute(
+        "SELECT C.name,W.salary,W.since_, C.email,C.address,C.phone FROM company as C, work_in as W where C.company_id = W.company_id and W.tenant_id = {}".format(tenant_id)
+    ).fetchall()
+
+    for result in cursor:
+        work_in.append(result)
+
+    if request.method == 'POST':
+        company_id = request.form['companyid']
+        salary = request.form['salary']
+        since_ = request.form['since']
+
+        if not company_id:
+            error = 'Please input companyid.'
+        elif g.conn.execute(
+                '''SELECT company_id FROM company WHERE company_id = {};'''.format(company_id)
+        ).fetchone() is None:
+            error='Company ID you input is invalid.'
+        elif g.conn.execute(
+                '''SELECT company_id,salary,since_ FROM work_in WHERE company_id = {0} and salary = {1} and since_= '{2}';'''.format(company_id,salary,since_)
+        ).fetchone() is not None:
+            error='This experience already in database.'
+        flash(error)
+
+        if error is None:
+            g.conn.execute(
+                '''INSERT INTO work_in (company_id, tenant_id, salary, since_) VALUES ({0}, {1}, {2}, '{3}')'''.format(
+                    company_id, tenant_id, salary, since_)
+            )
+            flash('Tenant edits work_in successfully')
+            return redirect(url_for('tenant_base'))
+
+    return render_template('editworkin.html', self_login=session.get('logged_in'),work_in = work_in)
+
+@app.route('/editlivein/tenant', methods=['GET','POST'])
+def editlivein():
+    error = None
+    if session.get('logged_in') == False:
+        return redirect(url_for('tenant_login'))
+    tenant_id = session.get('id')
+
+    live_in = []
+    cursor = g.conn.execute(
+        "SELECT  l.from_, l.to_ ,a.size, a.price, a.type, a.house_number, b.address FROM apartment_belong as a, buildings as b, live_in as l where a.building_id = b.building_id and l.apartment_id = a.apartment_id and l.tenant_id =  {}".format(tenant_id)
+    ).fetchall()
+
+    for result in cursor:
+        live_in.append(result)
+
+    if request.method == 'POST':
+        from_ = request.form['from']
+        to_ = request.form['to']
+        size = request.form['size']
+        price = request.form['price']
+        type = request.form['type']
+        house_number = request.form['house_number']
+        building_id = request.form['building_id']
+
+        if not building_id:
+            error = 'Please input buildingid.'
+        elif g.conn.execute(
+                '''SELECT building_id FROM buildings WHERE building_id = {};'''.format(building_id)
+        ).fetchone() is None:
+            error='Building ID you input is invalid.'
+        flash(error)
+
+        if error is None:
+            if g.conn.execute(
+                '''SELECT size,price,type,house_number,building_id 
+                FROM apartment_belong 
+                WHERE size = '{0}' and price = {1} and type = '{2}' and house_number = '{3}' and building_id = {4};'''
+                        .format(size,price,type,house_number,building_id )
+        ).fetchone() is None:
+                cursor = g.conn.execute(
+                    "SELECT max(apartment_id) FROM apartment_belong"
+                )
+                apartment_id = cursor.fetchone()[0] + 1
+                g.conn.execute(
+                    '''INSERT INTO apartment_belong (apartment_id,size,price,type,house_number,building_id ) VALUES ({0},'{1}',{2},'{3}','{4}',{5})'''.format(apartment_id,size,price,type,house_number,building_id )
+                )
+            else:
+                apartment_id = g.conn.execute(
+                '''SELECT apartment_id
+                FROM apartment_belong 
+                WHERE size = '{0}' and price = {1} and type = '{2}' and house_number = '{3}' and building_id = {4};'''
+                        .format(size,price,type,house_number,building_id)
+                ).fetchone()[0]
+
+            g.conn.execute(
+                '''INSERT INTO live_in (tenant_id, apartment_id, from_, to_) VALUES ({0}, {1}, '{2}','{3}')'''.format(
+                    tenant_id, apartment_id, from_, to_)
+            )
+            flash('Tenant edits live_in successfully')
+            return redirect(url_for('tenant_base'))
+
+    return render_template('editlivein.html', self_login=session.get('logged_in'),live_in = live_in)
+
+@app.route('/view_recommended_apartments')
+def view_recommended_apartments():
+    error = None
+    if session.get('logged_in') == False:
+        return redirect(url_for('tenant_login'))
+    tenant_id = session.get('id')
+
+    max_price = g.conn.execute(
+                    "SELECT max(price) FROM requirement WHERE requirement_id in (SELECT requirement_id FROM post WHERE tenant_id = {})".format(tenant_id)
+                ).fetchone()[0] + 500
+    apt = g.conn.execute(
+                    '''select a.size, a.type, a.price, a.house_number, b.address
+    from apartment_belong as a, buildings as b, offer as o
+    where a.building_id = b.building_id and a.apartment_id = o.apartment_id and o.availability = True and price <= {}'''.format(max_price)
+                ).fetchall()
+    return render_template('view_recommended_apartments.html', self_login=session.get('logged_in'), apt = apt)
+
+@app.route('/view_recommended_tenants')
+def view_recommended_tenants():
+    error = None
+    if session.get('logged_in') == False:
+        return redirect(url_for('landlord_login'))
+    landlord_id = session.get('id')
+
+    min_price = g.conn.execute(
+                    "SELECT min(price) FROM apartment_belong WHERE apartment_id in (SELECT apartment_id FROM offer WHERE landlord_id = {})".format(landlord_id)
+                ).fetchone()[0] - 500
+    tenants = g.conn.execute(
+                    '''select t.name, t.email, t.gender, t.age, r.price, r.type
+    from tenants as t , requirement as r, post as p
+    where t.tenant_id = p.tenant_id and p.requirement_id = r.requirement_id and r.price >= {}'''.format(min_price)
+    ).fetchall()
+
+
+    return render_template('view_recommended_tenants.html', self_login=session.get('logged_in'), tenants = tenants)
+
+
+
 
 
 if __name__ == "__main__":
@@ -207,10 +484,7 @@ if __name__ == "__main__":
         python server.py --help
 
     """
-
     HOST, PORT = host, port
     print "running on %s:%d" % (HOST, PORT)
     app.run(host=HOST, port=PORT, debug=debug, threaded=threaded)
-
-
   run()

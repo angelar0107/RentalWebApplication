@@ -1,0 +1,54 @@
+
+{% block content %}
+    <div class="container">
+            {% if self_login %}   
+            
+
+
+                <div class="profile-content">
+                    <div class="live-in">
+                        <h2>Current Address</h2>
+                        {% for s in live_in %}
+                        <div class="info-container">
+                                <div>From : {{ s[0] }}</div>
+                                <div>To : {{ s[1] }}</div>
+                                <div>Size : {{ s[2] }}</div>
+                                <div>Price : {{ s[3] }}</div>
+                                <div>Type : {{ s[4] }}</div>
+                                <div>House Number : {{ s[5] }}</div>
+                                <div>Address : {{ s[6] }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class = "edit-address">
+                    <form action="#" method="post" id="form1">
+                        <div class="form-group">
+                            <h3>Edit your address</h3>
+                            <label for="lname">From</label>
+                            <input type="text" name="from" id="from" placeholder="YYYY-MM-DD">
+                            <label for="lname">To</label>
+                            <input type="text" name="to" id="to" placeholder="YYYY-MM-DD">
+                            <label for="lname">Size</label>
+                            <input type="text" name="size" id="size" placeholder="size">
+                            <label for="lname">Price</label>
+                            <input type="text" name="price" id="price" placeholder="price">
+                            <label for="lname">Type</label>
+                            <input type="text" name="type" id="type" placeholder="type">
+                            <label for="lname">House Number</label>
+                            <input type="text" name="house_number" id="house_number" placeholder="House Number">
+                            <li><a href="{{ url_for('buildinglist')}}">Please Click Here To See All Buildings</a></li>
+                            <label for="companyid">Building ID</label>
+                            <input type="text" name="building_id" id="building_id" placeholder="Only number please">
+                        </div>
+                                        
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </form>
+                </div>
+
+
+            {% endif %}
+    </div>
+
+
+{% endblock %}

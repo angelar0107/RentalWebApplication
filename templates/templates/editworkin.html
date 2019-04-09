@@ -1,0 +1,49 @@
+
+
+{% block content %}
+    <div class="container">
+            {% if self_login %}   
+
+
+                <div class="profile-content">
+                    <div class="works-in">
+                        <h2>Experience</h2>
+                        {% for s in work_in %}
+                        <div class="info-container">
+                                <div>Company : {{ s[0] }}</div>
+                                <div>Salary : {{ s[1] }}</div>
+                                <div>Since : {{ s[2] }}</div>
+                                <div>Company email : {{ s[3] }}</div>
+                                <div>Company address : {{ s[4] }}</div>
+                                <div>Company phone : {{ s[5] }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class = "edit-company">
+                    <form action="#" method="post" id="form1">
+                        <div class="form-group">
+                             <h3>Edit your working company</h3>>
+                            <li><a href="{{ url_for('companylist')}}">Please Click Here To See All Companies</a></li>
+                            <label for="companyid">Company ID</label>
+                            <input type="text" name="companyid" id="companyid" placeholder="Only number please">
+                            <label for="salary">Salary</label>
+                            <input type="text" name="salary" id="salary" placeholder="Salary">
+                            <label for="since">Sice_date</label>
+                            <input type="text" name="since" id="since" placeholder="YYYY-MM-DD">
+                        </div>
+                                        
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+
+    <p>{{  get_flashed_messages()}}</p>
+   
+
+                    </form>
+                </div>
+
+
+            {% endif %}
+    </div>
+
+
+{% endblock %}

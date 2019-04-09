@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+</head>
+
+ 
+<body>
+   <div class="header">
+     <h1>58 Housing</h1>
+     <p>An Online Web Rental Platform</p>
+   </div>
+
+   <div class="topnav">
+       <ul>
+          {% if session.get('tenant')%}
+           <li><a href="{{ url_for('tenant_base') }}">Go to individual page, logged as a tenant</a></li>
+           {% elif session.get('landlord')%}
+           <li><a href="{{ url_for('landlord_base') }}">Go to individual page, logged as a landlord</a></li>
+           {% else %}
+            <li><a href="{{ url_for('tenant_base') }}">I'm tenant</a></li>
+            <li><a href="{{ url_for('landlord_base') }}">I'm landlord</a></li>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            {%endif%}
+
+      
+       </ul>
+   </div>
+    
+  
+   
+    <h2>Welcome to 58 Housing, a magic website!</h2>
+   
+  
+
+</body> 
+   <div class="footer">
+    © 2019 Anran Li, Yingling Wang. Rights statement.
+  </div>  
+</html>
