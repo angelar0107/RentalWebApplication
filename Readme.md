@@ -1,1 +1,2 @@
-# Hello World!
+# Rental Web Application
+Our website helps tenants find appropriate houses they want conveniently and efficiently. For both house seeker or landlord, the users can compile their profile including name, gender, age, email and phone on the website. For house seekers, they can complete current living section, company section and requirement section on the website and get noticed of the appropriate apartment they may like. For landlords, they can post apartments they have on the website and get noticed of tenants who may want to rent the apartment.
